@@ -1,0 +1,38 @@
+<form class="form-inline">
+  <div class="input-append">
+    <input class="span4" id="name" type="text" value="{{.Name}}">
+    <input type="hidden" id="mtime" value="{{.ModificationTime}}">
+    <button class="btn btn-primary" id="save" type="button">Save</button>
+  </div>
+  <button class="btn btn-primary" type="button" id="btn-add-task">Add task</button>
+  <span class="message label"></span>
+
+  <br/><br/>
+    <div class="progress">
+    </div>
+  <br/>
+
+  {{ range .Items }}
+  <div class="task">
+    <div class="input-append">
+      <input class="span4 name" type="text" value="{{.Name}}" placeholder="Task name">
+      <div class="btn-group">
+        <input type="hidden" class="status" value="{{.Status}}">
+        <button class="btn dropdown-toggle btn-status" data-toggle="dropdown">
+          {{.Status}}
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="#" class="btn btn-danger change-status">Todo</a></li>
+          <li><a href="#" class="btn btn-warning change-status">Started</a></li>
+          <li><a href="#" class="btn btn-success change-status">Done</a></li>
+        </ul>
+      </div>
+    </div>
+    <button class="btn remove-task" type="button">Remove task</button></br>
+    <textarea rows="3" class="description" placeholder="Task description">{{.Description}}</textarea>
+    <br/><br/>
+  </div>
+  {{end}}
+</form>
+<script src="/static/js/view.js"></script>
