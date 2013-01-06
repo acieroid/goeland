@@ -2,13 +2,14 @@ package main
 
 import (
 	"time"
-	"sync"
 	"encoding/json"
 	"math/rand"
 )
 
 const idChars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 const idSize = 3
+
+var store Store = NewMemoryStore()
 
 type TodoListItem struct {
 	Name string
@@ -21,38 +22,6 @@ type TodoList struct {
 	Name string
 	ModificationTime int64
 	Items[] *TodoListItem
-}
-
-type TodoListStore struct {
-	lists map[string] *TodoList
-	mu sync.RWMutex
-}
-
-var store *TodoListStore = NewTodoListStore()
-
-func NewTodoListStore() *TodoListStore {
-	return &TodoListStore{
-		make(map[string] *TodoList),
-		sync.RWMutex{},
-	}
-}
-
-func (s *TodoListStore) Get(id string) *TodoList {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return s.lists[id]
-}
-
-func (s *TodoListStore) Exists(id string) bool {
-	_, exists := s.lists[id]
-	return exists
-}
-
-func (s *TodoListStore) Set(list *TodoList) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.lists[list.Id] = list
-	return true
 }
 
 func RandomId() string {
