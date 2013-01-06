@@ -14,7 +14,14 @@ type Page struct {
 	Content template.HTML
 }
 
-func renderTemplate(w http.ResponseWriter, tmpl string, arg interface{}) {
+
+type Message struct {
+	Message string
+	Action string
+	ActionURL string
+}
+
+func RenderTemplate(w http.ResponseWriter, tmpl string, arg interface{}) {
 	skel, _ := template.ParseFiles(fmt.Sprintf("%s/skeleton.html", templatesDir))
 	content, _ := template.ParseFiles(fmt.Sprintf("%s/%s.html", templatesDir, tmpl));
 	
@@ -25,40 +32,40 @@ func renderTemplate(w http.ResponseWriter, tmpl string, arg interface{}) {
 	skel.Execute(w, page)
 }
 
-func index(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "index", nil)
+func Index(w http.ResponseWriter, r *http.Request) {
+	RenderTemplate(w, "index", nil)
 }
 
-func about(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "about", nil)
+func About(w http.ResponseWriter, r *http.Request) {
+	RenderTemplate(w, "about", nil)
 }
 
-func create(w http.ResponseWriter, r *http.Request) {
+func Create(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
-	l := newList(name)
-	l.save()
+	l := NewList(name)
+	l.Save()
 	http.Redirect(w, r, "/view/" + l.Id, http.StatusFound)
 }
 
-func view(w http.ResponseWriter, r *http.Request) {
+func View(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[6:]
-	l := loadList(id)
+	l := LoadList(id)
 	if (l != nil) {
-		renderTemplate(w, "view", l)
+		RenderTemplate(w, "view", l)
 	} else {
-		renderTemplate(w, "message",
+		RenderTemplate(w, "message",
 			&Message{"This list doesn't exists", "Back", "/"})
 	}
 }
 
-func save(w http.ResponseWriter, r *http.Request) {
-	l := parseList([]byte(r.FormValue("list")))
+func Save(w http.ResponseWriter, r *http.Request) {
+	l := ParseList([]byte(r.FormValue("list")))
 	if l == nil {
 		w.Write([]byte("Error: error when parsing the list"))
 		return
 	}
 
-	old := loadList(l.Id)
+	old := LoadList(l.Id)
 	if old == nil {
 		w.Write([]byte("Error: this list doesn't exists"))
 		return
@@ -68,18 +75,18 @@ func save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	l.save()
+	l.Save()
 	w.Write([]byte("Success"))
 }
 
 func main() {
-	init()
+	InitModel()
 
-	http.HandleFunc("/", index)
-	http.HandleFunc("/about", about)
-	http.HandleFunc("/create", create)
-	http.HandleFunc("/view/", view)
-	http.HandleFunc("/save", save)
+	http.HandleFunc("/", Index)
+	http.HandleFunc("/about", About)
+	http.HandleFunc("/create", Create)
+	http.HandleFunc("/view/", View)
+	http.HandleFunc("/save", Save)
 	
 	http.Handle("/static/",
 		http.StripPrefix("/static/",
