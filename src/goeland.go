@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"bytes"
-	"net/http"
+	"fmt"
 	"html/template"
+	"log"
+	"net/http"
 )
 
 const templatesDir = "../templates"
@@ -14,17 +15,16 @@ type Page struct {
 	Content template.HTML
 }
 
-
 type Message struct {
-	Message string
-	Action string
+	Message   string
+	Action    string
 	ActionURL string
 }
 
 func RenderTemplate(w http.ResponseWriter, tmpl string, arg interface{}) {
 	skel, _ := template.ParseFiles(fmt.Sprintf("%s/skeleton.html", templatesDir))
-	content, _ := template.ParseFiles(fmt.Sprintf("%s/%s.html", templatesDir, tmpl));
-	
+	content, _ := template.ParseFiles(fmt.Sprintf("%s/%s.html", templatesDir, tmpl))
+
 	buff := &bytes.Buffer{}
 	content.Execute(buff, arg)
 	c := template.HTML(buff.String())
@@ -44,13 +44,13 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	l := NewList(name)
 	l.Save()
-	http.Redirect(w, r, "/view/" + l.Id, http.StatusFound)
+	http.Redirect(w, r, "/view/"+l.Id, http.StatusFound)
 }
 
 func View(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[6:]
 	l := LoadList(id)
-	if (l != nil) {
+	if l != nil {
 		RenderTemplate(w, "view", l)
 	} else {
 		RenderTemplate(w, "message",
@@ -87,9 +87,12 @@ func main() {
 	http.HandleFunc("/create", Create)
 	http.HandleFunc("/view/", View)
 	http.HandleFunc("/save", Save)
-	
+
 	http.Handle("/static/",
 		http.StripPrefix("/static/",
-		http.FileServer(http.Dir(staticDir))))
-	http.ListenAndServe(":8080", nil)
+			http.FileServer(http.Dir(staticDir))))
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal("Cannot start HTTP server:", err)
+	}
 }

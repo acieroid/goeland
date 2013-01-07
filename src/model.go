@@ -1,27 +1,27 @@
 package main
 
 import (
-	"time"
 	"encoding/json"
 	"math/rand"
+	"time"
 )
 
 const idChars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 const idSize = 3
 
-var store Store = NewMemoryStore()
+var store Store = NewSQLiteStore("goeland.db")
 
 type TodoListItem struct {
-	Name string
+	Name        string
 	Description string
-	Status string
+	Status      string
 }
 
 type TodoList struct {
-	Id string
-	Name string
+	Id               string
+	Name             string
 	ModificationTime int64
-	Items[] *TodoListItem
+	Items            []*TodoListItem
 }
 
 func RandomId() string {
@@ -66,5 +66,5 @@ func (l *TodoList) AddItem(item *TodoListItem) {
 }
 
 func InitModel() {
-	rand.Seed(Now());
+	rand.Seed(Now())
 }
