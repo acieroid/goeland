@@ -65,7 +65,7 @@ function addTask() {
     <textarea rows="3" class="description" placeholder="Task description"></textarea>\
     <br/><br/>\
   </div>';
-    $('.tasks').append(task)
+    $('#tasks').append(task)
     updateButtons();
 }
 
