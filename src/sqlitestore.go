@@ -1,14 +1,14 @@
 package main
 
 import (
-	"code.google.com/p/gosqlite/sqlite"
+	"github.com/kuroneko/gosqlite3"
 	"log"
 	"os"
 	"runtime"
 )
 
 func CheckSQLError(err error) bool {
-	if err != nil {
+	if err != nil && err != sqlite3.ROW {
 		_, file, line, _ := runtime.Caller(1)
 		log.Printf("Error with SQLite: %s, at %s:%d\n", err, file, line)
 		return false
@@ -22,7 +22,7 @@ func FileExists(filename string) bool {
 }
 
 type SQLiteStore struct {
-	conn *sqlite.Conn
+	db *sqlite3.Database
 }
 
 func NewSQLiteStore(filename string) *SQLiteStore {
@@ -32,17 +32,17 @@ func NewSQLiteStore(filename string) *SQLiteStore {
 	defer s.CreateTables()
 
 	/* open the connection */
-	conn, err := sqlite.Open(filename)
+	db, err := sqlite3.Open(filename)
 	if err != nil {
 		log.Fatal("Cannot open sqlite connection:", err)
 	}
-	s.conn = conn
+	s.db = db
 
 	return s
 }
 
 func (s *SQLiteStore) CreateTable(descr string) {
-	err := s.conn.Exec(descr)
+	_, err := s.db.Execute(descr)
 	if err != nil {
 		log.Fatal("Error when creating SQLite tables:", err)
 		return
@@ -64,96 +64,117 @@ func (s *SQLiteStore) CreateTables() {
 }
 
 func (s *SQLiteStore) Get(idstr string) *TodoList {
-	var id int
 	l := &TodoList{}
-	stmt, err := s.conn.Prepare("select id, idstr, name, mtime from list where idstr = ?")
+	stmt, err := s.db.Prepare("select id, idstr, name, mtime from list where idstr = ?", idstr)
 	if !CheckSQLError(err) {
 		return nil
 	}
 
-	err = stmt.Exec(idstr)
+	err = stmt.Step()
 	if !CheckSQLError(err) {
 		return nil
 	}
 
-	err = stmt.Scan(&id, &l.Id, &l.Name, &l.ModificationTime)
+	values := stmt.Row()
+	id := values[0].(int64)
+	l.Id = values[1].(string)
+	l.Name = values[2].(string)
+	l.ModificationTime = values[3].(int64)
+
+	stmt, err = s.db.Prepare("select name, descr, status from item where list_id = ?", id)
 	if !CheckSQLError(err) {
 		return nil
 	}
 
-	stmt, err = s.conn.Prepare("select name, descr, status from item where list_id = ?")
+	_, err = stmt.All(func(st *sqlite3.Statement, values ...interface{}) {
+		l.AddItem(&TodoListItem{
+			values[0].(string),
+			values[1].(string),
+			values[2].(string)})
+	})
 	if !CheckSQLError(err) {
 		return nil
 	}
 
-	err = stmt.Exec(id)
-	if !CheckSQLError(err) {
-		return nil
-	}
-
-	for stmt.Next() {
-		item := &TodoListItem{}
-		err = stmt.Scan(&item.Name, &item.Description, &item.Status)
-		if !CheckSQLError(err) {
-			return nil
-		}
-		l.AddItem(item)
-	}
 	return l
 }
 
 func (s *SQLiteStore) Exists(id string) bool {
-	var n int
-	stmt, err := s.conn.Prepare("select count(*) from list where idstr = ?")
+	stmt, err := s.db.Prepare("select count(*) from list where idstr = ?", id)
 	if !CheckSQLError(err) {
 		return false
 	}
 
-	err = stmt.Exec(id)
+	err = stmt.Step()
 	if !CheckSQLError(err) {
 		return false
 	}
 
-	err = stmt.Scan(&n)
-	if !CheckSQLError(err) {
-		return false
-	}
+	n := stmt.Row()[0].(int64)
+	stmt.Finalize()
 
 	return n != 0
 }
 
+func (s *SQLiteStore) Delete(id string) bool {
+	stmt, err := s.db.Prepare("delete from list where idstr = ?", id)
+	if !CheckSQLError(err) {
+		return false
+	}
+
+	err = stmt.Step()
+	if !CheckSQLError(err) {
+		return false
+	}
+	return true
+}
+
 func (s *SQLiteStore) Set(list *TodoList) bool {
-	var id int
-	err := s.conn.Exec("insert into list(idstr, name, mtime) values (?, ?, ?)", list.Id, list.Name, list.ModificationTime)
+	_, err := s.db.Execute("begin transaction")
 	if !CheckSQLError(err) {
 		return false
 	}
 
-	stmt, err := s.conn.Prepare("select id from list where idstr = ?")
+	if s.Exists(list.Id) {
+		/* To update, delete it first (maybe not the best solution) */
+		if !s.Delete(list.Id) {
+			return false
+		}
+	}
+
+	stmt, err := s.db.Prepare("insert into list(idstr, name, mtime) values (?, ?, ?)",
+		list.Id, list.Name, list.ModificationTime)
 	if !CheckSQLError(err) {
+		s.db.Execute("end transaction")
 		return false
 	}
 
-	err = stmt.Exec(list.Id)
+	err = stmt.Step()
 	if !CheckSQLError(err) {
+		s.db.Execute("end transaction")
 		return false
 	}
 
-	err = stmt.Scan(&id)
-	if !CheckSQLError(err) {
-		return false
-	}
+	id := s.db.LastInsertRowID()
 
 	for _, item := range list.Items {
-		stmt, err := s.conn.Prepare("insert into item(list_id, name, descr, status) values (?, ?, ?, ?)")
+		stmt, err := s.db.Prepare("insert into item(list_id, name, descr, status) values (?, ?, ?, ?)",
+			id, item.Name, item.Description, item.Status)
 		if !CheckSQLError(err) {
+			s.db.Execute("end transaction")
 			return false
 		}
 
-		err = stmt.Exec(id, item.Name, item.Description, item.Status)
+		err = stmt.Step()
 		if !CheckSQLError(err) {
+			s.db.Execute("end transaction")
 			return false
 		}
+	}
+
+	_, err = s.db.Execute("end transaction")
+	if !CheckSQLError(err) {
+		return false
 	}
 
 	return true
