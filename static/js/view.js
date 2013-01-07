@@ -6,17 +6,21 @@ function updateButtons() {
     /* Add the corresponding class for the task statuses */
     $('.btn-status').map(function() {
         var content = $(this).html();
+        var task = $(this).parent().parent().parent()
         $(this).removeClass('btn-danger');
         $(this).removeClass('btn-warning');
         $(this).removeClass('btn-success');
         if (content.match(/Todo/)) {
             $(this).addClass('btn-danger');
+            $(task).css('border-color', '#da4f49')
             todo += 1;
         } else if (content.match(/Started/)) {
             $(this).addClass('btn-warning');
+            $(task).css('border-color', '#faa732')
             started += 1;
         } else if (content.match(/Done/)) {
             $(this).addClass('btn-success');
+            $(task).css('border-color', '#5bb75b')
             done += 1;
         }
         $(this).css('color', '#000');
