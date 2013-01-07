@@ -65,7 +65,7 @@ function addTask() {
     <textarea rows="3" class="description" placeholder="Task description"></textarea>\
     <br/><br/>\
   </div>';
-    $('form').append(task)
+    $('.tasks').append(task)
     updateButtons();
 }
 
@@ -115,8 +115,13 @@ function save() {
 $(document).ready(function() {
     updateButtons();
 
-    $('.change-status').live("click", updateStatus);
-    $('.remove-task').live("click", removeTask);
+    $('.change-status').live('click', updateStatus);
+    $('.remove-task').live('click', removeTask);
     $('#btn-add-task').click(addTask);
     $('#save').click(save);
+
+    $("#tasks").sortable({
+        opacity: 0.6,
+        cursor: 'move',
+    });
 });
