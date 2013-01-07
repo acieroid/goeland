@@ -76,6 +76,11 @@ func (s *SQLiteStore) Get(idstr string) *TodoList {
 	}
 
 	values := stmt.Row()
+	if values == nil || len(values) != 4 || values[0] == nil {
+		/* invalid/non-existant list */
+		return nil
+	}
+
 	id := values[0].(int64)
 	l.Id = values[1].(string)
 	l.Name = values[2].(string)
