@@ -119,10 +119,11 @@ function save() {
 $(document).ready(function() {
     updateButtons();
 
-    $('.change-status').live('click', updateStatus);
-    $('.remove-task').live('click', removeTask);
+    $('.change-status').on('click', updateStatus);
+    $('.remove-task').on('click', removeTask);
     $('#btn-add-task').click(addTask);
     $('#save').click(save);
+    addTask();
 
     $("#tasks").sortable({
         opacity: 0.6,
