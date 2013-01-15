@@ -123,7 +123,6 @@ $(document).ready(function() {
     $('.remove-task').on('click', removeTask);
     $('#btn-add-task').click(addTask);
     $('#save').click(save);
-    addTask();
 
     $("#tasks").sortable({
         opacity: 0.6,
