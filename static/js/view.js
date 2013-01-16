@@ -85,16 +85,24 @@ function removeTask() {
     $(this).parent().remove();
 }
 
+function findTasks(selector) {
+    return $(selector).find('.task').first().parent().children('.task').map(function (i, elem) {
+        return {'Id': 0,
+                'Name': $(elem).find('.name').val(),
+                'Description': $(elem).find('.description').val(),
+                'Status': $(elem).find('.status').val(),
+                'Items': findTasks(elem)
+               };
+    }).get();
+}
+
 /* return the todo list encoded as a json string */
 function getEncodedList() {
     return {'Id': $(location).attr('href').match(/\/view\/([a-zA-Z0-9]+)/)[1], /* TODO */
             'Name': $('#name').val(),
             'ModificationTime': new Number($('#mtime').val()),
-            'Items': $('.task').first().parent().children('.task').map(function (i, elem) {
-                return {'Name': $(elem).find('.name').val(),
-                        'Description': $(elem).find('.description').val(),
-                        'Status': $(elem).find('.status').val()};
-            }).get()};
+            'Items': findTasks(document),
+            }
 }
 
 /* save the currently displayed todo list */
