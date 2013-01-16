@@ -90,7 +90,7 @@ function getEncodedList() {
     return {'Id': $(location).attr('href').match(/\/view\/([a-zA-Z0-9]+)/)[1], /* TODO */
             'Name': $('#name').val(),
             'ModificationTime': new Number($('#mtime').val()),
-            'Items': $('.task').map(function (i, elem) {
+            'Items': $('.task').first().parent().children('.task').map(function (i, elem) {
                 return {'Name': $(elem).find('.name').val(),
                         'Description': $(elem).find('.description').val(),
                         'Status': $(elem).find('.status').val()};

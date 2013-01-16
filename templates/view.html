@@ -18,12 +18,12 @@
   <button class="btn remove-task" type="button">Remove task</button>
   <button class="btn add-sub-task" type="button">Add sub task</button></br>
   <textarea rows="3" class="description" placeholder="Task description">{{.Description}}</textarea>
-  <ul class="unstyled tasks">
-  {{ range .Items }}
-    <li>{{ template "item" . }}</li>
-  {{end}}
-  </ul>
+  <div class="tasks">
+    {{range .Items}}
+    {{template "item" .}}
+    {{end}}
   </div>
+</div>
 {{end}}
 
 <form class="form-inline">
@@ -41,11 +41,9 @@
   <br/>
 
   <div id="tasks">
-  <ul class="unstyled tasks">
-  {{ range .Items }}
-    <li>{{ template "item" . }}</li>
+  {{range .Items}}
+  {{template "item" .}}
   {{end}}
-  </ul>
   </div>
 </form>
 <script src="/static/js/view.js"></script>
