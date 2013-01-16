@@ -61,8 +61,6 @@ func About(w http.ResponseWriter, r *http.Request) {
 func Create(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	l := NewList(name)
-	l.AddItem(&TodoListItem{1, "Foo", "", "Todo", nil})
-	l.GetItem(1).AddItem(&TodoListItem{2, "Bar", "", "Todo", nil})
 	l.Save()
 	http.Redirect(w, r, "/view/"+l.Id, http.StatusFound)
 }
@@ -111,7 +109,7 @@ func main() {
 	http.Handle("/static/",
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir(staticDir))))
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8123", nil)
 	if err != nil {
 		log.Fatal("Cannot start HTTP server:", err)
 	}
