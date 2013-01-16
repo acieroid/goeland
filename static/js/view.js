@@ -15,7 +15,7 @@ var TASK_HTML = '<div class="task">\
     </div>\
   </div>\
   <button class="btn remove-task" type="button">Remove task</button>\
-  <button class="btn add-sub-task" type="button">Add sub task</button></br>\
+  <button class="btn add-sub-task" type="button">Add subtask</button></br>\
   <textarea rows="3" class="description" placeholder="Task description"></textarea>\
   <ul class="unstyled tasks">\
   </ul>\
