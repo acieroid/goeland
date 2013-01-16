@@ -12,9 +12,11 @@ const idSize = 3
 var store Store = NewSQLiteStore("goeland.db")
 
 type TodoListItem struct {
+	Id          int64
 	Name        string
 	Description string
 	Status      string
+	Items       []*TodoListItem
 }
 
 type TodoList struct {
@@ -64,6 +66,31 @@ func (l *TodoList) Save() bool {
 func (l *TodoList) AddItem(item *TodoListItem) {
 	l.Items = append(l.Items, item)
 }
+
+func FindItem(items[] *TodoListItem, id int64) *TodoListItem {
+	for _, item := range items {
+		if item.Id == id {
+			return item
+		}
+		subItem := item.GetItem(id)
+		if subItem != nil {
+			return subItem
+		}
+	}
+	return nil
+}
+
+func (l *TodoList) GetItem(id int64) *TodoListItem {
+	return FindItem(l.Items, id)
+}
+
+func (i *TodoListItem) GetItem(id int64) *TodoListItem {
+	return FindItem(i.Items, id)
+}
+
+func (i *TodoListItem) AddItem(item *TodoListItem) {
+	i.Items = append(i.Items, item)
+}		
 
 func InitModel() {
 	rand.Seed(Now())

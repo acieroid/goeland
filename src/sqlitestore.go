@@ -31,7 +31,7 @@ func NewSQLiteStore(filename string) *SQLiteStore {
 
 	defer s.CreateTables()
 
-	/* open the connection */
+	// open the connection
 	db, err := sqlite3.Open(filename)
 	if err != nil {
 		log.Fatal("Cannot open sqlite connection:", err)
@@ -50,17 +50,20 @@ func (s *SQLiteStore) CreateTable(descr string) {
 }
 
 func (s *SQLiteStore) CreateTables() {
-	s.CreateTable("create table if not exists list (" +
-		"id integer primary key autoincrement," +
-		"idstr text unique," +
-		"name text," +
-		"mtime int(64))")
-	s.CreateTable("create table if not exists item (" +
-		"list_id integer not null," +
-		"name text," +
-		"descr text," +
-		"status text," +
-		"foreign key (list_id) references list(id) on delete cascade)")
+	s.CreateTable(`create table if not exists list (
+		       id integer primary key autoincrement,
+		       idstr text unique,
+		       name text,
+		       mtime int(64))`)
+	s.CreateTable(`create table if not exists item (
+		       id integer primary key autoincrement,
+		       parent_id integer not null,
+		       list_id integer not null,
+		       name text,
+		       descr text,
+		       status text,
+		       foreign key (list_id) references list(id) on delete cascade,
+		       foreign key (parent_id) references item(id) on delete cascade)`)
 }
 
 func (s *SQLiteStore) Get(idstr string) *TodoList {
@@ -77,7 +80,7 @@ func (s *SQLiteStore) Get(idstr string) *TodoList {
 
 	values := stmt.Row()
 	if values == nil || len(values) != 4 || values[0] == nil {
-		/* invalid/non-existant list */
+		// invalid/non-existant list
 		return nil
 	}
 
@@ -86,17 +89,33 @@ func (s *SQLiteStore) Get(idstr string) *TodoList {
 	l.Name = values[2].(string)
 	l.ModificationTime = values[3].(int64)
 
-	stmt, err = s.db.Prepare("select name, descr, status from item where list_id = ?", id)
+	// select all the items, sorting by ID, since the parent items
+       	// always have a smaller ID than their childrens
+	stmt, err = s.db.Prepare("select parent_id, id, name, descr, status from item where list_id = ? sort by id", id)
 	if !CheckSQLError(err) {
 		return nil
 	}
 
 	_, err = stmt.All(func(st *sqlite3.Statement, values ...interface{}) {
-		l.AddItem(&TodoListItem{
-			values[0].(string),
-			values[1].(string),
-			values[2].(string)})
+		parentId := values[0].(int64)
+		item := &TodoListItem{
+			values[1].(int64),
+			values[2].(string),
+			values[3].(string),
+			values[4].(string),
+			nil}
+		if (parentId < 0) {
+			l.AddItem(item)
+		} else {
+			item := l.GetItem(parentId)
+			if item == nil {
+				log.Println("Error when getting an item of list %s, ignoring item", l.Id);
+				return
+			}
+			item.AddItem(item)
+		}
 	})
+
 	if !CheckSQLError(err) {
 		return nil
 	}
@@ -122,6 +141,7 @@ func (s *SQLiteStore) Exists(id string) bool {
 }
 
 func (s *SQLiteStore) Delete(id string) bool {
+	// this will also delete all the items thanks to the sql constraints
 	stmt, err := s.db.Prepare("delete from list where idstr = ?", id)
 	if !CheckSQLError(err) {
 		return false
@@ -141,7 +161,7 @@ func (s *SQLiteStore) Set(list *TodoList) bool {
 	}
 
 	if s.Exists(list.Id) {
-		/* To update, delete it first (maybe not the best solution) */
+		// To update, delete it first (maybe not the best solution)
 		if !s.Delete(list.Id) {
 			return false
 		}
@@ -163,7 +183,7 @@ func (s *SQLiteStore) Set(list *TodoList) bool {
 	id := s.db.LastInsertRowID()
 
 	for _, item := range list.Items {
-		stmt, err := s.db.Prepare("insert into item(list_id, name, descr, status) values (?, ?, ?, ?)",
+		stmt, err := s.db.Prepare("insert into item(parent_id, list_id, name, descr, status) values (-1, ?, ?, ?, ?)",
 			id, item.Name, item.Description, item.Status)
 		if !CheckSQLError(err) {
 			s.db.Execute("end transaction")
@@ -175,6 +195,13 @@ func (s *SQLiteStore) Set(list *TodoList) bool {
 			s.db.Execute("end transaction")
 			return false
 		}
+
+		item.Id = s.db.LastInsertRowID()
+
+		if !s.AddItems(item, id) {
+			s.db.Execute("end transaction")
+			return false;
+		}
 	}
 
 	_, err = s.db.Execute("end transaction")
@@ -182,5 +209,27 @@ func (s *SQLiteStore) Set(list *TodoList) bool {
 		return false
 	}
 
+	return true
+}
+
+func (s *SQLiteStore) AddItems(i *TodoListItem, id int64) bool {
+	for _, item := range i.Items {
+		stmt, err := s.db.Prepare("insert into item(parent_id, list_id, name, descr, status) values (?, ?, ?, ?, ?)",
+			i.Id, id, item.Name, item.Description, item.Status)
+		if !CheckSQLError(err) {
+			return false
+		}
+
+		err = stmt.Step()
+		if !CheckSQLError(err) {
+			return false
+		}
+
+		item.Id = s.db.LastInsertRowID()
+
+		if !s.AddItems(item, id) {
+			return false
+		}
+	}
 	return true
 }
