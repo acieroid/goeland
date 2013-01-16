@@ -1,3 +1,25 @@
+var TASK_HTML = '<div class="task">\
+  <div class="input-append">\
+    <input class="span4 name" type="text" value="" placeholder="Task name">\
+    <div class="btn-group">\
+      <input type="hidden" class="status" value="Todo">\
+      <button class="btn dropdown-toggle btn-status" data-toggle="dropdown">\
+        Todo\
+        <span class="caret"></span>\
+      </button>\
+      <ul class="dropdown-menu">\
+        <li><a href="#" class="btn btn-danger change-status">Todo</a></li>\
+        <li><a href="#" class="btn btn-warning change-status">Started</a></li>\
+        <li><a href="#" class="btn btn-success change-status">Done</a></li>\
+      </ul>\
+    </div>\
+  </div>\
+  <button class="btn remove-task" type="button">Remove task</button>\
+  <button class="btn add-sub-task" type="button">Add sub task</button></br>\
+  <textarea rows="3" class="description" placeholder="Task description"></textarea>\
+  <ul class="unstyled tasks">\
+  </ul>\
+</div>';
 function updateButtons() {
     var todo = 0;
     var started = 0;
@@ -48,28 +70,13 @@ function updateStatus() {
 
 /* add a task to the task list */
 function addTask() {
-    var n = new Number($('.task').length + 1)
-    var task = '<div class="task">\
-    <div class="input-append">\
-      <input class="span4 name" type="text" value="" placeholder="Task name">\
-      <div class="btn-group">\
-        <input type="hidden" class="status" value="Todo">\
-        <button class="btn dropdown-toggle btn-status" data-toggle="dropdown">\
-          Todo\
-          <span class="caret"></span>\
-        </button>\
-        <ul class="dropdown-menu">\
-          <li><a href="#" class="btn btn-danger change-status">Todo</a></li>\
-          <li><a href="#" class="btn btn-warning change-status">Started</a></li>\
-          <li><a href="#" class="btn btn-success change-status">Done</a></li>\
-        </ul>\
-      </div>\
-    </div>\
-    <button class="btn remove-task" type="button">Remove task</button></br>\
-    <textarea rows="3" class="description" placeholder="Task description"></textarea>\
-    <br/><br/>\
-  </div>';
-    $('#tasks').append(task)
+    $('#tasks').append(TASK_HTML)
+    updateButtons();
+}
+
+/* add a subtask to a task */
+function addSubTask() {
+    $(this).parent().find('.tasks').first().append(TASK_HTML)
     updateButtons();
 }
 
@@ -119,8 +126,9 @@ function save() {
 $(document).ready(function() {
     updateButtons();
 
-    $('.change-status').on('click', updateStatus);
-    $('.remove-task').on('click', removeTask);
+    $(document).on('click', '.change-status', updateStatus);
+    $(document).on('click', '.remove-task', removeTask);
+    $(document).on('click', '.add-sub-task', addSubTask);
     $('#btn-add-task').click(addTask);
     $('#save').click(save);
 

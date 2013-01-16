@@ -22,14 +22,32 @@ type Message struct {
 }
 
 func RenderTemplate(w http.ResponseWriter, tmpl string, arg interface{}) {
-	skel, _ := template.ParseFiles(fmt.Sprintf("%s/skeleton.html", templatesDir))
-	content, _ := template.ParseFiles(fmt.Sprintf("%s/%s.html", templatesDir, tmpl))
+	skel, err := template.ParseFiles(fmt.Sprintf("%s/skeleton.html", templatesDir))
+	if err != nil {
+		log.Println("Error when parsing a template: %s", err)
+		return
+	}
+
+	content, err := template.ParseFiles(fmt.Sprintf("%s/%s.html", templatesDir, tmpl))
+	if err != nil {
+		log.Println("Error when parsing a template: %s", err)
+		return
+	}
 
 	buff := &bytes.Buffer{}
-	content.Execute(buff, arg)
+	err = content.Execute(buff, arg)
+	if err != nil {
+		log.Println("Error when executing a template: %s", err)
+		return
+	}
+
 	c := template.HTML(buff.String())
 	page := &Page{Content: c}
-	skel.Execute(w, page)
+	err = skel.Execute(w, page)
+	if err != nil {
+		log.Println("Error when executing a template: %s", err)
+		return
+	}
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -43,6 +61,8 @@ func About(w http.ResponseWriter, r *http.Request) {
 func Create(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	l := NewList(name)
+	l.AddItem(&TodoListItem{1, "Foo", "", "Todo", nil})
+	l.GetItem(1).AddItem(&TodoListItem{2, "Bar", "", "Todo", nil})
 	l.Save()
 	http.Redirect(w, r, "/view/"+l.Id, http.StatusFound)
 }

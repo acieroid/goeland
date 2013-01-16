@@ -1,3 +1,31 @@
+{{define "item"}}
+<div class="task">
+  <div class="input-append">
+    <input class="span4 name" type="text" value="{{.Name}}" placeholder="Task name">
+    <div class="btn-group">
+      <input type="hidden" class="status" value="{{.Status}}">
+      <button class="btn dropdown-toggle btn-status" data-toggle="dropdown">
+        {{.Status}}
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li><a href="#" class="btn btn-danger change-status">Todo</a></li>
+        <li><a href="#" class="btn btn-warning change-status">Started</a></li>
+        <li><a href="#" class="btn btn-success change-status">Done</a></li>
+      </ul>
+    </div>
+  </div>
+  <button class="btn remove-task" type="button">Remove task</button>
+  <button class="btn add-sub-task" type="button">Add sub task</button></br>
+  <textarea rows="3" class="description" placeholder="Task description">{{.Description}}</textarea>
+  <ul class="unstyled tasks">
+  {{ range .Items }}
+    <li>{{ template "item" . }}</li>
+  {{end}}
+  </ul>
+  </div>
+{{end}}
+
 <form class="form-inline">
   <div class="input-append">
     <input class="span4" id="name" type="text" value="{{.Name}}">
@@ -13,27 +41,11 @@
   <br/>
 
   <div id="tasks">
+  <ul class="unstyled tasks">
   {{ range .Items }}
-  <div class="task">
-    <div class="input-append">
-      <input class="span4 name" type="text" value="{{.Name}}" placeholder="Task name">
-      <div class="btn-group">
-        <input type="hidden" class="status" value="{{.Status}}">
-        <button class="btn dropdown-toggle btn-status" data-toggle="dropdown">
-          {{.Status}}
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li><a href="#" class="btn btn-danger change-status">Todo</a></li>
-          <li><a href="#" class="btn btn-warning change-status">Started</a></li>
-          <li><a href="#" class="btn btn-success change-status">Done</a></li>
-        </ul>
-      </div>
-    </div>
-    <button class="btn remove-task" type="button">Remove task</button></br>
-    <textarea rows="3" class="description" placeholder="Task description">{{.Description}}</textarea>
-  </div>
+    <li>{{ template "item" . }}</li>
   {{end}}
+  </ul>
   </div>
 </form>
 <script src="/static/js/view.js"></script>

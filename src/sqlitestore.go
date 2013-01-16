@@ -91,7 +91,7 @@ func (s *SQLiteStore) Get(idstr string) *TodoList {
 
 	// select all the items, sorting by ID, since the parent items
        	// always have a smaller ID than their childrens
-	stmt, err = s.db.Prepare("select parent_id, id, name, descr, status from item where list_id = ? sort by id", id)
+	stmt, err = s.db.Prepare("select parent_id, id, name, descr, status from item where list_id = ? order by id", id)
 	if !CheckSQLError(err) {
 		return nil
 	}
@@ -107,12 +107,12 @@ func (s *SQLiteStore) Get(idstr string) *TodoList {
 		if (parentId < 0) {
 			l.AddItem(item)
 		} else {
-			item := l.GetItem(parentId)
-			if item == nil {
+			parent := l.GetItem(parentId)
+			if parent == nil {
 				log.Println("Error when getting an item of list %s, ignoring item", l.Id);
 				return
 			}
-			item.AddItem(item)
+			parent.AddItem(item)
 		}
 	})
 
