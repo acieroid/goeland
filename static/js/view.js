@@ -1,4 +1,4 @@
-var TASK_HTML = '<div class="task">\
+var TASK_HTML = '<div class="task" style="margin-left: 10px;">\
   <div class="input-append">\
     <input class="span4 name" type="text" value="" placeholder="Task name">\
     <div class="btn-group">\
