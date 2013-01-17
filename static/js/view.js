@@ -1,4 +1,4 @@
-var TASK_HTML = '<div class="task" style="margin-left: 10px;">\
+var TASK_HTML = '<div class="task">\
   <div class="input-append">\
     <input class="span4 name" type="text" value="" placeholder="Task name">\
     <div class="btn-group">\
@@ -15,8 +15,9 @@ var TASK_HTML = '<div class="task" style="margin-left: 10px;">\
     </div>\
   </div>\
   <button class="btn remove-task" type="button">Remove task</button>\
-  <button class="btn add-sub-task" type="button">Add subtask</button></br>\
-  <textarea rows="3" class="description" placeholder="Task description"></textarea>\
+  <button class="btn add-sub-task" type="button">Add subtask</button>\
+  <button class="btn toggle-description" type="button">Toggle description</button></br>\
+  <textarea rows="3" style="display:none;" class="description" placeholder="Task description"></textarea>\
   <ul class="unstyled tasks">\
   </ul>\
 </div>';
@@ -85,6 +86,7 @@ function removeTask() {
     $(this).parent().remove();
 }
 
+/* find the first-level subtasks, given a selector */
 function findTasks(selector) {
     return $(selector).find('.task').first().parent().children('.task').map(function (i, elem) {
         return {'Id': 0,
@@ -131,12 +133,18 @@ function save() {
            });
 }
 
+/* toggle the display of the description of a task */
+function toggleDescription() {
+    $(this).parent().children('.description').toggle()
+}
+
 $(document).ready(function() {
     updateButtons();
 
     $(document).on('click', '.change-status', updateStatus);
     $(document).on('click', '.remove-task', removeTask);
     $(document).on('click', '.add-sub-task', addSubTask);
+    $(document).on('click', '.toggle-description', toggleDescription);
     $('#btn-add-task').click(addTask);
     $('#save').click(save);
 

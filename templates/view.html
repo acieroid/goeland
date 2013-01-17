@@ -1,5 +1,5 @@
 {{define "item"}}
-<div class="task" style="margin-left: 10px;">
+<div class="task">
   <div class="input-append">
     <input class="span4 name" type="text" value="{{.Name}}" placeholder="Task name">
     <div class="btn-group">
@@ -16,8 +16,9 @@
     </div>
   </div>
   <button class="btn remove-task" type="button">Remove task</button>
-  <button class="btn add-sub-task" type="button">Add subtask</button></br>
-  <textarea rows="3" class="description" placeholder="Task description">{{.Description}}</textarea>
+  <button class="btn add-sub-task" type="button">Add subtask</button>
+  <button class="btn toggle-description" type="button">Toggle description</button></br>
+  <textarea rows="3" {{ if .Description }} {{ else }} style="display:none;" {{ end }} class="description" placeholder="Task description">{{.Description}}</textarea>
   <div class="tasks">
     {{range .Items}}
     {{template "item" .}}
