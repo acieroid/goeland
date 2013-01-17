@@ -129,7 +129,7 @@ function save() {
                    icon = '<i class="icon-ok icon-white"></i>'
                }
                $('.message').html(icon + ' ' +data);
-               $(".message").delay(3000).fadeOut();
+               $('.message').delay(3000).fadeOut();
            });
 }
 
@@ -154,7 +154,9 @@ $(document).ready(function() {
     $('#save').click(save);
     $('#btn-hide-descr').click(hideAllDescriptions);
 
-    $("#tasks").sortable({
+    $('#tasks').nestedSortable({
+        items: '.task',
+        listType: 'div',
         opacity: 0.6,
         cursor: 'move',
     });
