@@ -135,7 +135,12 @@ function save() {
 
 /* toggle the display of the description of a task */
 function toggleDescription() {
-    $(this).parent().children('.description').toggle()
+    $(this).parent().children('.description').toggle();
+}
+
+/* hide all the descriptions */
+function hideAllDescriptions() {
+    $('.description').hide();
 }
 
 $(document).ready(function() {
@@ -147,6 +152,7 @@ $(document).ready(function() {
     $(document).on('click', '.toggle-description', toggleDescription);
     $('#btn-add-task').click(addTask);
     $('#save').click(save);
+    $('#btn-hide-descr').click(hideAllDescriptions);
 
     $("#tasks").sortable({
         opacity: 0.6,
