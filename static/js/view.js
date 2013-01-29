@@ -1,6 +1,6 @@
 var TASK_HTML = '<div class="task">\
   <div class="input-append">\
-    <input class="span8 name" type="text" value="" placeholder="Task name">\
+    <input class="span6 name" type="text" value="" placeholder="Task name">\
     <div class="btn-group">\
       <input type="hidden" class="status" value="Todo">\
       <button class="btn dropdown-toggle btn-status" data-toggle="dropdown">\
