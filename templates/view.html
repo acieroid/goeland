@@ -15,9 +15,9 @@
       </ul>
     </div>
   </div>
-  <button class="btn remove-task" type="button">Remove task</button>
-  <button class="btn add-sub-task" type="button">Add subtask</button>
-  <button class="btn toggle-description" type="button">Toggle description</button></br>
+  <a class="btn remove-task"><span class="icon-remove"></span></a>
+  <a class="btn add-sub-task"><span class="icon-plus"></span></a>
+  <a class="btn toggle-description"><span class="icon-chevron-down"></span></a></br>
   <textarea rows="3" {{ if .Description }} {{ else }} style="display:none;" {{ end }} class="description" placeholder="Task description">{{.Description}}</textarea>
   <div class="tasks">
     {{range .Items}}
