@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 )
 
 const templatesDir = "../templates"
@@ -77,6 +78,7 @@ func View(w http.ResponseWriter, r *http.Request) {
 }
 
 func Save(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.FormValue("list"))
 	l := ParseList([]byte(r.FormValue("list")))
 	if l == nil {
 		w.Write([]byte("Error: error when parsing the list"))
@@ -98,6 +100,12 @@ func Save(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	output, err := os.OpenFile("goeland.log", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
+	if err != nil {
+		log.Fatal("Cannot open log file:", err)
+	}
+	log.SetOutput(output)
+
 	InitModel()
 
 	http.HandleFunc("/", Index)
@@ -109,7 +117,7 @@ func main() {
 	http.Handle("/static/",
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir(staticDir))))
-	err := http.ListenAndServe(":8123", nil)
+	err = http.ListenAndServe(":8123", nil)
 	if err != nil {
 		log.Fatal("Cannot start HTTP server:", err)
 	}
