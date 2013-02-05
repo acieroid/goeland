@@ -154,10 +154,12 @@ $(document).ready(function() {
     $('#save').click(save);
     $('#btn-hide-descr').click(hideAllDescriptions);
 
-    $('#tasks').nestedSortable({
+    /*
+      $('#tasks').nestedSortable({
         items: '.task',
         listType: 'div',
         opacity: 0.6,
         cursor: 'move',
     });
+    */
 });
