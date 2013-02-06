@@ -112,6 +112,7 @@ function save() {
     $('.message').html('<i class="icon-refresh icon-white"></i> Saving...');
     $('.message').removeClass('label-important');
     $('.message').removeClass('label-success');
+    $('.message').removeClass('label-info');
     $('.message').addClass('label-info');
     $('.message').fadeIn(3000);
     $.post('/save',
@@ -143,6 +144,23 @@ function hideAllDescriptions() {
     $('.description').hide();
 }
 
+/* Enable drag and drop */
+function enableDragAndDrop() {
+      $('#tasks').nestedSortable({
+        items: '.task',
+        listType: 'div',
+        opacity: 0.6,
+        cursor: 'move',
+    });
+    $('.message').html('<i class="icon-info-sign icon-white"></i> Drag and drop enabled, reload the page to disable');
+    $('.message').removeClass('label-important');
+    $('.message').removeClass('label-success');
+    $('.message').removeClass('label-info');
+    $('.message').addClass('label-info');
+    $('.message').fadeIn(3000).delay(3000).fadeOut();
+    $('#btn-drag').addClass('disabled');
+}
+
 $(document).ready(function() {
     updateButtons();
 
@@ -153,13 +171,5 @@ $(document).ready(function() {
     $('#btn-add-task').click(addTask);
     $('#save').click(save);
     $('#btn-hide-descr').click(hideAllDescriptions);
-
-    /*
-      $('#tasks').nestedSortable({
-        items: '.task',
-        listType: 'div',
-        opacity: 0.6,
-        cursor: 'move',
-    });
-    */
+    $('#btn-drag').click(enableDragAndDrop);
 });
