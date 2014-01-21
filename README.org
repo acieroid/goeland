@@ -1,0 +1,11 @@
+* About
+Goéland is a simple todo list manager written in Go. You can find a running instance at [[http://todo.awesom.eu]]
+
+* Install
+#+BEGIN_SRC shell
+git clone https://github.com/acieroid/goeland
+cd goeland
+export GOPATH=`pwd`
+go get github.com/kuroneko/gosqlite3 
+go build goeland
+#+END_SRC
