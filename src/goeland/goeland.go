@@ -9,8 +9,8 @@ import (
 	"os"
 )
 
-const templatesDir = "../templates"
-const staticDir = "../static"
+const templatesDir = "templates"
+const staticDir = "static"
 
 type Page struct {
 	Content template.HTML

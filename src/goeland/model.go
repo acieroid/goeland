@@ -11,19 +11,16 @@ const idSize = 3
 
 var store Store = NewSQLiteStore("goeland.db")
 
-type TodoListItem struct {
-	Id          int64
-	Name        string
-	Description string
-	Status      string
-	Items       []*TodoListItem
-}
+// XXX add root hashtable to handle every TodoList
 
 type TodoList struct {
-	Id               string
+	Id               int64
 	Name             string
+	Description      string
+	Status           string
 	ModificationTime int64
-	Items            []*TodoListItem
+	EstimatedTime    int64
+	Items            []int64
 }
 
 func RandomId() string {
@@ -42,7 +39,7 @@ func NewList(name string) *TodoList {
 	var id string
 	for id = RandomId(); ListExists(id); id = RandomId() {
 	}
-	return &TodoList{id, name, Now(), nil}
+	return &TodoList{id, name, "", "none", Now(), 0, nil}
 }
 
 func LoadList(id string) *TodoList {
@@ -59,7 +56,20 @@ func ListExists(id string) bool {
 	return store.Exists(id)
 }
 
+func SumEtime(items[] int64) {
+	if items == nil {
+		return l.EstimatedTime;
+	}
+	for _, item := range l.Items {
+		if l.items != nil
+			return l.EstimatedTime;
+		l.EstimatedTime = SumEtime(l.items)
+		l.EstimatedTime += item.EstimatedTime
+	}
+}
+
 func (l *TodoList) Save() bool {
+	l.SumEtime()
 	return store.Set(l)
 }
 
@@ -67,7 +77,7 @@ func (l *TodoList) AddItem(item *TodoListItem) {
 	l.Items = append(l.Items, item)
 }
 
-func FindItem(items[] *TodoListItem, id int64) *TodoListItem {
+func FindItem(root[] *TodoList, id int64) *TodoList {
 	for _, item := range items {
 		if item.Id == id {
 			return item

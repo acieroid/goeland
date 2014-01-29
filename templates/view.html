@@ -2,7 +2,8 @@
 <div class="task">
   <div class="input-append">
     <input class="span6 name" type="text" value="{{.Name}}" placeholder="Task name">
-    <div class="btn-group">
+    <input class="span1 etime" type="text" value="{{.EstimatedTime}}" placeholder="Estimated time">
+   <div class="btn-group">
       <input type="hidden" class="status" value="{{.Status}}">
       <button class="btn dropdown-toggle btn-status" data-toggle="dropdown">
         {{.Status}}
@@ -30,6 +31,7 @@
 <form class="form-inline">
   <div class="input-append">
     <input class="span4" id="name" type="text" value="{{.Name}}">
+    <input class="span1" id="etime" type="text" value="{{.EstimatedTime}}">
     <input type="hidden" id="mtime" value="{{.ModificationTime}}">
     <button class="btn btn-primary" id="save" type="button">Save</button>
   </div>

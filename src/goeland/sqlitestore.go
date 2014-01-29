@@ -49,12 +49,14 @@ func (s *SQLiteStore) CreateTable(descr string) {
 	}
 }
 
+// XXX
 func (s *SQLiteStore) CreateTables() {
 	s.CreateTable(`create table if not exists list (
 		       id integer primary key autoincrement,
 		       idstr text unique,
 		       name text,
-		       mtime int(64))`)
+		       mtime int(64),
+		       etime int(64))`)
 	s.CreateTable(`create table if not exists item (
 		       id integer primary key autoincrement,
 		       parent_id integer not null,
@@ -62,13 +64,15 @@ func (s *SQLiteStore) CreateTables() {
 		       name text,
 		       descr text,
 		       status text,
+		       etime int(64),
 		       foreign key (list_id) references list(id) on delete cascade,
 		       foreign key (parent_id) references item(id) on delete cascade)`)
 }
 
+// XXX
 func (s *SQLiteStore) Get(idstr string) *TodoList {
 	l := &TodoList{}
-	stmt, err := s.db.Prepare("select id, idstr, name, mtime from list where idstr = ?", idstr)
+	stmt, err := s.db.Prepare("select id, idstr, name, mtime, etime from list where idstr = ?", idstr)
 	if !CheckSQLError(err) {
 		return nil
 	}
@@ -79,7 +83,7 @@ func (s *SQLiteStore) Get(idstr string) *TodoList {
 	}
 
 	values := stmt.Row()
-	if values == nil || len(values) != 4 || values[0] == nil {
+	if values == nil || len(values) != 5 || values[0] == nil {
 		// invalid/non-existant list
 		return nil
 	}
@@ -88,10 +92,11 @@ func (s *SQLiteStore) Get(idstr string) *TodoList {
 	l.Id = values[1].(string)
 	l.Name = values[2].(string)
 	l.ModificationTime = values[3].(int64)
+	l.EstimatedTime = values[4].(int64)
 
 	// select all the items, sorting by ID, since the parent items
-       	// always have a smaller ID than their childrens
-	stmt, err = s.db.Prepare("select parent_id, id, name, descr, status from item where list_id = ? order by id", id)
+    // always have a smaller ID than their childrens
+	stmt, err = s.db.Prepare("select parent_id, id, name, descr, status, etime from item where list_id = ? order by id", id)
 	if !CheckSQLError(err) {
 		return nil
 	}
@@ -103,6 +108,7 @@ func (s *SQLiteStore) Get(idstr string) *TodoList {
 			values[2].(string),
 			values[3].(string),
 			values[4].(string),
+			values[5].(int64),
 			nil}
 		if (parentId < 0) {
 			l.AddItem(item)
@@ -154,6 +160,7 @@ func (s *SQLiteStore) Delete(id string) bool {
 	return true
 }
 
+// XXX
 func (s *SQLiteStore) Set(list *TodoList) bool {
 	_, err := s.db.Execute("begin transaction")
 	if !CheckSQLError(err) {
@@ -167,8 +174,8 @@ func (s *SQLiteStore) Set(list *TodoList) bool {
 		}
 	}
 
-	stmt, err := s.db.Prepare("insert into list(idstr, name, mtime) values (?, ?, ?)",
-		list.Id, list.Name, list.ModificationTime)
+	stmt, err := s.db.Prepare("insert into list(idstr, name, mtime, etime) values (?, ?, ?, ?)",
+		list.Id, list.Name, list.ModificationTime, list.EstimatedTime)
 	if !CheckSQLError(err) {
 		s.db.Execute("end transaction")
 		return false
@@ -183,8 +190,8 @@ func (s *SQLiteStore) Set(list *TodoList) bool {
 	id := s.db.LastInsertRowID()
 
 	for _, item := range list.Items {
-		stmt, err := s.db.Prepare("insert into item(parent_id, list_id, name, descr, status) values (-1, ?, ?, ?, ?)",
-			id, item.Name, item.Description, item.Status)
+		stmt, err := s.db.Prepare("insert into item(parent_id, list_id, name, descr, status, etime) values (-1, ?, ?, ?, ?, ?)",
+			id, item.Name, item.Description, item.Status, item.EstimatedTime)
 		if !CheckSQLError(err) {
 			s.db.Execute("end transaction")
 			return false
@@ -212,13 +219,16 @@ func (s *SQLiteStore) Set(list *TodoList) bool {
 	return true
 }
 
+// XXX
 func (s *SQLiteStore) AddItems(i *TodoListItem, id int64) bool {
 	for _, item := range i.Items {
-		stmt, err := s.db.Prepare("insert into item(parent_id, list_id, name, descr, status) values (?, ?, ?, ?, ?)",
-			i.Id, id, item.Name, item.Description, item.Status)
+		stmt, err := s.db.Prepare("insert into item(parent_id, list_id, name, descr, status, etime) values (?, ?, ?, ?, ?, ?)",
+			i.Id, id, item.Name, item.Description, item.Status, item.EstimatedTime)
 		if !CheckSQLError(err) {
 			return false
 		}
+
+		log.Println("%s", stmt)
 
 		err = stmt.Step()
 		if !CheckSQLError(err) {
