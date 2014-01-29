@@ -1,6 +1,7 @@
 var TASK_HTML = '<div class="task">\
   <div class="input-append">\
     <input class="span6 name" type="text" value="" placeholder="Task name">\
+    <input class="span1 name" type="text" value="0" placeholder="Estimated time">\
     <div class="btn-group">\
       <input type="hidden" class="status" value="Todo">\
       <button class="btn dropdown-toggle btn-status" data-toggle="dropdown">\
@@ -93,6 +94,7 @@ function findTasks(selector) {
                 'Name': $(elem).find('.name').val(),
                 'Description': $(elem).find('.description').val(),
                 'Status': $(elem).find('.status').val(),
+                'EstimatedTime': new Number($(elem).find('.etime').val()),
                 'Items': findTasks(elem)
                };
     }).get();
@@ -103,6 +105,7 @@ function getEncodedList() {
     return {'Id': $(location).attr('href').match(/\/view\/([a-zA-Z0-9]+)/)[1], /* TODO */
             'Name': $('#name').val(),
             'ModificationTime': new Number($('#mtime').val()),
+            'EstimatedTime': new Number($('#etime').val()),
             'Items': findTasks(document),
             }
 }
@@ -119,8 +122,8 @@ function save() {
            {
                'list': JSON.stringify(getEncodedList())
            }, function(data) {
-               var icon
-               if (data.match(/Error/)) {
+              var icon
+              if (data.match(/Error/)) {
                    $('.message').removeClass('label-info');
                    $('.message').addClass('label-important');
                    icon = '<i class="icon-remove icon-white"></i>'
